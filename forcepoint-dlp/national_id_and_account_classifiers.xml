@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Forcepoint DLP Custom Policy for Rwandan Financial & Identity Attributes -->
+<DLPPolicyPackage name="MINECOFIN_DSACCO_Banking_Data_Protection" version="1.0">
+  <Classifiers>
+    
+    <!-- Rwanda National ID: 16 digits starting with 1 (Citizen) followed by birth year -->
+    <Classifier id="RW_NATIONAL_ID" name="Rwanda National Identification Number">
+      <RegEx Pattern="\b1(19|20)\d{2}[78]\d{8}[0-9]\b" />
+      <ConfidenceLevel threshold="85" />
+      <ActionOnMatch>BLOCK_AND_ALERT_SOC</ActionOnMatch>
+    </Classifier>
+
+    <!-- D-SACCO Standard Account Number: Standard 12-14 numeric account formats -->
+    <Classifier id="DSACCO_BANK_ACC" name="District SACCO Account Number Pattern">
+      <RegEx Pattern="\b(00\d{2}|40\d{2})[- ]?\d{4}[- ]?\d{4}[- ]?\d{2}\b" />
+      <ConfidenceLevel threshold="75" />
+      <ActionOnMatch>NOTIFY_COMPLIANCE_OFFICER</ActionOnMatch>
+    </Classifier>
+
+  </Classifiers>
+
+  <Rule name="Prevent Exfiltration of Member Data via HTTP/Email/Removable Storage">
+    <Conditions operator="OR">
+      <Match classifierId="RW_NATIONAL_ID" minOccurrences="3" />
+      <Match classifierId="DSACCO_BANK_ACC" minOccurrences="5" />
+    </Conditions>
+    <Enforcement Action="DropPacket" Notification="SendAlertToSyslog" SyslogTarget="siem.sacco.rw:514" />
+  </Rule>
+</DLPPolicyPackage>
